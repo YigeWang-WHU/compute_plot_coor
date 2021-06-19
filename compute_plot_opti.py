@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import os
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import pickle
 import numpy as np
 import glob
 from matplotlib import pyplot as plt
@@ -39,14 +39,18 @@ for comptage, xx in enumerate(mylist):
             print('new time: {}'.format(fields[0]))
             outname = '{}/{}{}'.format(xx, line_num,csv) 
             # Fill in values
+            # from list to numpy
             input2 = np.reshape(np.array(list(map(float,fields))[1:]), (Col, Row), order='F')
             
+            
             # Compute gradients
-            input = np.zeros((Col, Row))
+            input = np.zeros((Col, Row)) # initilization
             diff_x = np.diff(input2, axis = 1) / dx
             diff_y = np.diff(input2, axis = 0) / dx
+            # initialization
             sumdiff_x = np.zeros((Col-1, Row-1))
             sumdiff_y = np.zeros((Col-1, Row-1))
+
             for i in range(Col-1): 
                 sumdiff_x[i,:] = np.sum(diff_x[i:i+2, :], axis =0 ) 
             for i in range(Row-1):
@@ -72,29 +76,31 @@ for comptage, xx in enumerate(mylist):
 
     out_folder = "./{}/scaled".format(xx)
     may_mkdir(out_folder)
-
+    
+    
     for idx, f in enumerate(csv_files):
         cur_f = np.genfromtxt(f, delimiter = ' ')
         f_s = -cur_f / Romax
         f_s = np.exp(20 * f_s)
 
         # draw
-        pic_name = os.path.join(out_folder, "Scaled_T_{}.jpg".format(idx))
-
-        fig = plt.figure(1, figsize=(8, 6))
-        ax = plt.gca()
+        pic_name = os.path.join(out_folder, "Scaled_T_{}.pickle".format(idx))
+        fig, ax = plt.subplots()
+        if not ax:
+            ax = plt.gca()
+        
+        im = ax.imshow(f_s, cmap='gray',origin='lower')
+        cbar = ax.figure.colorbar(im, ax=ax)
         ax.set_xlim(0.0, 800.0)
         ax.set_ylim(0.0, 450.0)
-        im = ax.imshow(f_s, cmap='gray',origin='lower')
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.4)
-        plt.colorbar(im, cax=cax)
-        plt.savefig(pic_name)
+        pickle.dump(fig, open(pic_name, 'wb'))
         plt.close()
+
 
     # Delete files
     for f in csv_files:
         os.remove(f)
+    
 
     print("Done!")
 
