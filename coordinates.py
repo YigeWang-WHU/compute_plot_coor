@@ -1,6 +1,5 @@
-import cv2  # install opencv from conda
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+import pickle
 import os
 # import numpy as np
 
@@ -8,16 +7,18 @@ import os
 class TestClass():
     def __init__(self, name):  # read the image
         self.fname = name
-        self.img = mpimg.imread(self.fname)
+        self.figx = pickle.load(open(name, 'rb'))
+        #self.img = mpimg.imread(self.fname)
         self.point = ()
 
     def getCoord(self):
-        fig = plt.figure()
+        #fig = plt.figure()
         #ax = fig.add_subplot(111)
-        plt.imshow(self.img)
+        self.figx.show() 
+        #plt.imshow(self.img)
 
         # connect the action 'button_press' with the func 'onclie'
-        cid = fig.canvas.mpl_connect('button_press_event', self.__onclick__)
+        cid = self.figx.canvas.mpl_connect('button_press_event', self.__onclick__)
         plt.show()
         return self.point
 
@@ -42,7 +43,8 @@ file_path = "{}/scaled".format(folder)
 imgs = sorted(os.listdir(file_path), key=lambda x: int(x.split('.')[0].split('_')[-1]))
 
 
-
+if os.path.exists(folder + "/coordinates.txt"):
+    os.remove(folder + "/coordinates.txt")
 
 for img in imgs:
 
